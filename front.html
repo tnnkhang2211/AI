@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot </title>
+    <style>
+        .chat-container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f8f8f8;
+            font-family: Arial, sans-serif;
+        }
+
+        .chat-container p {
+            margin: 10px 0;
+        }
+
+        .user-message {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>Chatbot</h1>
+        <div id="chat-log"></div>
+        <input type="text" id="user-input" placeholder="Enter your message" onkeydown="submitOnEnter(event)" />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        function appendMessage(message, sender) {
+            var chatLog = document.getElementById("chat-log");
+            var p = document.createElement("p");
+            p.textContent = message;
+            if (sender === "user") {
+                p.className = "user-message";
+            }
+            chatLog.appendChild(p);
+        }
+
+        function sendMessage() {
+            var userInput = document.getElementById("user-input").value;
+            document.getElementById("user-input").value = "";
+            appendMessage(userInput, "user");
+
+            // Send the user input to the backend for processing
+            fetch("/chatbot", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ user_input: userInput }),
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                var botResponse = data.bot_response;
+                appendMessage(botResponse, "bot");
+            });
+        }
+
+        function submitOnEnter(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>
